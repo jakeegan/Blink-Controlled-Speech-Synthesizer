@@ -3,7 +3,7 @@
 <p align="center">
 <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/jakeegan/blink-controlled-speech-synthesizer">
 <img alt="GitHub issues" src="https://img.shields.io/github/issues/jakeegan/blink-controlled-speech-synthesizer">
-<img alt="GitHub" src="https://img.shields.io/github/license/jakeegan/blink-controlled-speech-synthesizer">
+<img alt="GitHub" src="https://img.shields.io/github/license/jakeegan/Blink-Controlled-Speech-Synthesizer">
 </p>
 
 ## Description
