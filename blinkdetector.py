@@ -1,10 +1,3 @@
-# ----------------------------------------------------------------------------------------------------------------------
-# The BlinkDetector class fetches frames from the webcam, detects a face, applies landmark detection on the face,
-# calculates the eye aspect ratio of the eye, creates a 13-dimensional feature vector with the eye aspect ratio
-# values, then uses an svm to classify between non-blink and blink states. When a blink is detected, the main program
-# is notified through a Qt signal. The class also contains functions to obtain eye aspect ratio values from a
-# video file and train an SVM. The SVM is trained on the eyeblink8 dataset.
-# ----------------------------------------------------------------------------------------------------------------------
 import time
 import dlib
 import cv2
@@ -15,37 +8,46 @@ from sklearn import svm
 
 
 class BlinkDetector(QObject):
-    LEFT_EYE_OFFSET = 36
-    RIGHT_EYE_OFFSET = 42
-    SKIP_FRAMES = 2
-    DOWNSIZE_RATIO = 2
-    EAR_THRESHOLD = 0.25
-    EAR_FEATURE_SIZE = 13
-    EAR_FEATURE_SIZE_HALF = 6
+    """
+    The BlinkDetector class fetches frames from the webcam, detects a face, applies landmark detection on the face,
+    calculates the eye aspect ratio of the eye, creates a 13-dimensional feature vector with the eye aspect ratio
+    values, then uses an svm to classify between non-blink and blink states. When a blink is detected, the main program
+    is notified through a Qt signal. The class also contains functions to obtain eye aspect ratio values from a
+    video file and train an SVM. The SVM is trained on the eyeblink8 dataset.
+    """
+    LEFT_EYE_OFFSET = 36    # Starting position for the left eye in landmark array
+    RIGHT_EYE_OFFSET = 42   # Starting position for the right eye in landmark array
+    SKIP_FRAMES = 2     # Number of frames to skip for face detector
+    DOWNSIZE_RATIO = 2  # The ratio to downsize video frames
+    EAR_THRESHOLD = 0.25    # Threshold for eye aspect ratio
+    EAR_FEATURE_SIZE = 13   # Size of eye aspect ratio array
+    EAR_FEATURE_SIZE_HALF = 6   # Half size of eye aspect ratio array
 
     face_detected = Signal(bool)
     blink_detected = Signal()
 
     def __init__(self, file_path, draw_mode):
         super(BlinkDetector, self).__init__()
-        random.seed(1)
-        self.draw_mode = draw_mode
-        self.ear_feature = []
-        self.faces = []
-        self.frame_count = 0
-        self.frames_per_sec = 0
-        self.last_blink_frame = 0
+        self.draw_mode = draw_mode  # Enable/disable drawing of landmarks
+        self.ear_feature = []   # Eye aspect ratio feature array
+        self.faces = []     # Array to hold detected faces
+        self.frame_count = 0    # Video frame counter
+        self.frames_per_sec = 0     # Frames per second processed by blink detector
+        self.last_blink_frame = 0   # Last frame that a blink was detected
         with open('resources/blink_model.pk1', 'rb') as f:
             self.blink_svm = pickle.load(f)
         self.face_detector = dlib.get_frontal_face_detector()
         self.landmark_detector = dlib.shape_predictor("resources/shape_predictor_68_face_landmarks.dat")
-        # filePath = 0 for front cam
-        self.cap = cv2.VideoCapture(file_path)
+        self.cap = cv2.VideoCapture(file_path)  # filePath = 0 for front cam
         self.start_time = time.time()
 
-    # Used to scale a dlib rect object
     @staticmethod
     def scale_dlib_rect(rect, scale):
+        """
+        Scales a dlib rectangle object by the specified amount
+        :param rect:<rectangle> The object to be scaled
+        :param scale:<float> The scale factor
+        """
         left = rect.left() * scale
         top = rect.top() * scale
         right = rect.right() * scale
@@ -55,6 +57,11 @@ class BlinkDetector(QObject):
     # Calculates the ear aspect ratio using facial landmark positions
     @staticmethod
     def calc_ear(landmarks, offset):
+        """
+        Calculates eye aspect ratio with landmark positions
+        :param landmarks:<array> Array holding facial landmarks
+        :param offset:<int> Starting position in the landmarks array for either left or right eye
+        """
         a = ((landmarks.part(1 + offset).x - landmarks.part(5 + offset).x) ** 2 +
              (landmarks.part(1 + offset).y - landmarks.part(5 + offset).y) ** 2) ** (1 / 2)
         b = ((landmarks.part(2 + offset).x - landmarks.part(4 + offset).x) ** 2 +
@@ -63,16 +70,20 @@ class BlinkDetector(QObject):
              (landmarks.part(0 + offset).y - landmarks.part(3 + offset).y) ** 2) ** (1 / 2)
         return (a + b) / (2.0 * c)
 
-    # Checks to see if a frame is available to be read from the web cam
     @Slot()
     def check_frame(self):
+        """
+        Check to see if there is a frame available to be read from the video source
+        """
         success, frame = self.cap.read()
         if success:
             self.process_frame(frame)
         return success
 
-    # Trains the EAR SVM using a dataset
     def train_svm(self):
+        """
+        Train the blink support vector machine using a dataset
+        """
         self.load_data()
         ear, label = self.load_data()
         ear_test = []
@@ -91,9 +102,11 @@ class BlinkDetector(QObject):
         with open('resources/blink_model.pk1', 'wb') as f:
             pickle.dump(self.blink_svm, f)
 
-    # Loads EAR data from a text file for SVM training
     @staticmethod
     def load_data():
+        """
+        Load eye aspect ratio data from a text file for support vector machine training
+        """
         x = []
         y = []
         ear = []
@@ -120,7 +133,10 @@ class BlinkDetector(QObject):
 
     # Calculates EAR data from a video file
     # Saves EAR data to text file for SVM training
-    def save_data(self):
+    def calc_data(self):
+        """
+        Calculates eye aspect ratio for each frame from a video file
+        """
         with open("ear_output.txt", "w") as file:
             while True:
                 ret = self.check_frame()
@@ -131,15 +147,19 @@ class BlinkDetector(QObject):
                 file.write(string)
                 cv2.waitKey(5)
 
-    # Detects a blink using threshold technique
     def detect_blinks_threshold(self):
+        """
+        Detects a blink using thresholding technique
+        """
         if len(self.ear_feature) >= 2:
             if self.ear_feature[0] > BlinkDetector.EAR_THRESHOLD > self.ear_feature[1]:
                 print("blink")
                 self.blink_detected.emit()
 
-    # Detects blinks using a 13-dimensional vector of EAR values using an SVM
     def detect_blinks_svm(self):
+        """
+        Feeds a vector of eye aspect ratio values to a support vector machine to classify blinks
+        """
         if len(self.ear_feature) == BlinkDetector.EAR_FEATURE_SIZE and \
                 self.frame_count > self.last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE_HALF:
             if self.blink_svm.predict([self.ear_feature]) == 'C':
@@ -147,17 +167,17 @@ class BlinkDetector(QObject):
                 self.blink_detected.emit()
                 self.last_blink_frame = self.frame_count
 
-    # Uses the retrieved frame to detect a face, apply landmark detection, and apply blink detection
     def process_frame(self, frame):
+        """
+        Applies face detection, landmark detection, and blink detection on a retrieved frame
+        """
         self.frame_count += 1
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_small = cv2.resize(gray, (0, 0), fx=1.0 / BlinkDetector.DOWNSIZE_RATIO,
                                 fy=1.0 / BlinkDetector.DOWNSIZE_RATIO)
         if self.frame_count % BlinkDetector.SKIP_FRAMES == 0 or len(self.faces) == 0:
-            # upsample 0 times (less accurate, faster)
-            self.faces = self.face_detector(gray_small, 0)
+            self.faces = self.face_detector(gray_small, 0)  # up-sample 0 times (less accurate, faster)
         if len(self.faces) >= 1:
-            # Face found
             face = self.scale_dlib_rect(self.faces[0], BlinkDetector.DOWNSIZE_RATIO)
             landmarks = self.landmark_detector(gray, face)
             ear_left = self.calc_ear(landmarks, BlinkDetector.LEFT_EYE_OFFSET)
@@ -169,7 +189,6 @@ class BlinkDetector(QObject):
                     cv2.circle(gray, (landmarks.part(i).x, landmarks.part(i).y), 1, (0, 255, 255), -1)
             self.face_detected.emit(True)
         else:
-            # Face not found
             self.ear_feature.insert(0, 0.5)
             self.face_detected.emit(False)
         if len(self.ear_feature) >= BlinkDetector.EAR_FEATURE_SIZE:
@@ -187,7 +206,7 @@ class BlinkDetector(QObject):
 
 # Getting training data from a video file
 # blink_detector = BlinkDetector("C:/eyeblink8/11/27122013_154548_cam.avi", True)
-# blink_detector.save_data()
+# blink_detector.calc_data()
 
 # Normal operation
 # Blink_detector = BlinkDetector(0, True)
