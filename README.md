@@ -7,8 +7,7 @@
 </p>
 
 ## Description
+A windows application designed to enable communication for people suffering from paralysis. The user will be able to communicate solely by blinking.
 
 ## Installation
 Requires python 3.7, PySide2, dlib, scikit-learn, opencv-python
-
-## Authors
