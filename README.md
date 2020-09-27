@@ -7,7 +7,7 @@
 </p>
 
 ## Description
-A windows application designed to enable communication for people suffering from paralysis. The user will be able to communicate solely by blinking.
+An application designed to synthesize speech solely through the control of blink gestures to enable communication for people suffering from paralysis.
 
 ## Installation
 Requires python 3.7 and the libraries in requirements.txt
