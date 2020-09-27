@@ -110,6 +110,7 @@ class BlinkDetector(QObject):
         y = []
         ear = []
         label = []
+        # Get dataset from text files
         with open("resources/datasets/labels_eyeblink8.txt", "r") as file:
             lines = file.readlines()
             for line in lines:
@@ -123,6 +124,7 @@ class BlinkDetector(QObject):
                 line = line.split(":")
                 x.append(float(line[1]))
             last_blink = 0  # The index that a blink last occurred
+            # Prepare feature vectors and labels
             for i in range(BlinkDetector.EAR_FEATURE_SIZE_HALF, len(x) - BlinkDetector.EAR_FEATURE_SIZE_HALF):
                 temp = []
                 for j in range(-BlinkDetector.EAR_FEATURE_SIZE_HALF, BlinkDetector.EAR_FEATURE_SIZE_HALF + 1):
@@ -175,11 +177,13 @@ class BlinkDetector(QObject):
         Applies face detection, landmark detection, and blink detection on a retrieved frame
         """
         self.frame_count += 1
+        # Frame preprocessing
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_small = cv2.resize(gray, (0, 0), fx=1.0 / BlinkDetector.DOWNSIZE_RATIO,
                                 fy=1.0 / BlinkDetector.DOWNSIZE_RATIO)
         if self.frame_count % BlinkDetector.SKIP_FRAMES == 0 or len(self.faces) == 0:
             self.faces = self.face_detector(gray_small, 0)  # up-sample 0 times (less accurate, faster)
+        # If a face is detected
         if len(self.faces) >= 1:
             face = self.scale_dlib_rect(self.faces[0], BlinkDetector.DOWNSIZE_RATIO)
             landmarks = self.landmark_detector(gray, face)
@@ -194,6 +198,7 @@ class BlinkDetector(QObject):
         else:
             self.ear_feature.insert(0, 0.5)
             self.face_detected.emit(False)
+        # Update feature vector
         if len(self.ear_feature) >= BlinkDetector.EAR_FEATURE_SIZE:
             self.ear_feature.pop()
         self.frames_per_sec = self.frame_count / (time.time() - self.start_time)
