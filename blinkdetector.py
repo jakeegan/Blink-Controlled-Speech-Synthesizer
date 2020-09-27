@@ -2,9 +2,10 @@ import time
 import dlib
 import cv2
 import pickle
-import random
 from PySide2.QtCore import QObject, Signal, Slot
 from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
 
 
 class BlinkDetector(QObject):
@@ -54,7 +55,6 @@ class BlinkDetector(QObject):
         bottom = rect.bottom() * scale
         return dlib.rectangle(left, top, right, bottom)
 
-    # Calculates the ear aspect ratio using facial landmark positions
     @staticmethod
     def calc_ear(landmarks, offset):
         """
@@ -84,21 +84,20 @@ class BlinkDetector(QObject):
         """
         Train the blink support vector machine using a dataset
         """
-        self.load_data()
-        ear, label = self.load_data()
-        ear_test = []
-        label_test = []
-        count = 0
-        max_count = int(len(ear) * 0.1)
-        while count < max_count:
-            count += 1
-            index = random.randint(1, len(ear))
-            ear_test.append(ear.pop(index))
-            label_test.append(label.pop(index))
-        self.blink_svm = svm.SVC(kernel='linear', C=10)
-        self.blink_svm.fit(ear, label)
-        print("Accuracy: {}%".format(self.blink_svm.score(ear_test, label_test) * 100))
+        # Load and preprocess data
+        X, y = self.load_data()
+        X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, test_size=0.1, shuffle=True)
 
+        # Train SVM
+        self.blink_svm = svm.SVC(kernel='rbf', C=1, gamma='scale')
+        self.blink_svm.fit(X_train, y_train)
+
+        # Test SVM
+        y_pred = self.blink_svm.predict(X_test)
+        print(confusion_matrix(y_test, y_pred))
+        print(classification_report(y_test, y_pred))
+
+        # Save SVM
         with open('resources/blink_model.pk1', 'wb') as f:
             pickle.dump(self.blink_svm, f)
 
@@ -123,16 +122,20 @@ class BlinkDetector(QObject):
                 line = line.rstrip()
                 line = line.split(":")
                 x.append(float(line[1]))
+            last_blink = 0  # The index that a blink last occurred
             for i in range(BlinkDetector.EAR_FEATURE_SIZE_HALF, len(x) - BlinkDetector.EAR_FEATURE_SIZE_HALF):
                 temp = []
                 for j in range(-BlinkDetector.EAR_FEATURE_SIZE_HALF, BlinkDetector.EAR_FEATURE_SIZE_HALF + 1):
                     temp.append(x[i-j])
-                ear.append(temp)
-                label.append(y[i])
+                if y[i] == 'X' and last_blink + BlinkDetector.EAR_FEATURE_SIZE < i:
+                    ear.append(temp)
+                    label.append(y[i])
+                elif y[i] == 'C':
+                    last_blink = i
+                    ear.append(temp)
+                    label.append(y[i])
         return ear, label
 
-    # Calculates EAR data from a video file
-    # Saves EAR data to text file for SVM training
     def calc_data(self):
         """
         Calculates eye aspect ratio for each frame from a video file
@@ -161,7 +164,7 @@ class BlinkDetector(QObject):
         Feeds a vector of eye aspect ratio values to a support vector machine to classify blinks
         """
         if len(self.ear_feature) == BlinkDetector.EAR_FEATURE_SIZE and \
-                self.frame_count > self.last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE_HALF:
+                self.frame_count > self.last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE:
             if self.blink_svm.predict([self.ear_feature]) == 'C':
                 print("blink")
                 self.blink_detected.emit()
@@ -200,7 +203,8 @@ class BlinkDetector(QObject):
 # ----------------------------------------------------------------------------------------------------------------------
 # Example class uses
 
-# Training svm 98.7 accuracy
+
+# Training SVM
 # blink_detector = BlinkDetector(0, True)
 # blink_detector.train_svm()
 
