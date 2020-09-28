@@ -29,18 +29,18 @@ class BlinkDetector(QObject):
 
     def __init__(self, file_path, draw_mode):
         super(BlinkDetector, self).__init__()
-        self.draw_mode = draw_mode  # Enable/disable drawing of landmarks
-        self.ear_feature = []   # Eye aspect ratio feature array
-        self.faces = []     # Array to hold detected faces
-        self.frame_count = 0    # Video frame counter
+        self._draw_mode = draw_mode  # Enable/disable drawing of landmarks
+        self._ear_feature = []   # Eye aspect ratio feature array
+        self._faces = []     # Array to hold detected faces
+        self._frame_count = 0    # Video frame counter
         self.frames_per_sec = 0     # Frames per second processed by blink detector
-        self.last_blink_frame = 0   # Last frame that a blink was detected
+        self._last_blink_frame = 0   # Last frame that a blink was detected
         with open('resources/blink_model.pk1', 'rb') as f:
-            self.blink_svm = pickle.load(f)
-        self.face_detector = dlib.get_frontal_face_detector()
-        self.landmark_detector = dlib.shape_predictor("resources/shape_predictor_68_face_landmarks.dat")
-        self.cap = cv2.VideoCapture(file_path)  # filePath = 0 for front cam
-        self.start_time = time.time()
+            self._blink_svm = pickle.load(f)
+        self._face_detector = dlib.get_frontal_face_detector()
+        self._landmark_detector = dlib.shape_predictor("resources/shape_predictor_68_face_landmarks.dat")
+        self._cap = cv2.VideoCapture(file_path)  # filePath = 0 for front cam
+        self._start_time = time.time()
 
     @staticmethod
     def scale_dlib_rect(rect, scale):
@@ -75,7 +75,7 @@ class BlinkDetector(QObject):
         """
         Check to see if there is a frame available to be read from the video source
         """
-        success, frame = self.cap.read()
+        success, frame = self._cap.read()
         if success:
             self.process_frame(frame)
         return success
@@ -89,17 +89,17 @@ class BlinkDetector(QObject):
         X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0, test_size=0.1, shuffle=True)
 
         # Train SVM
-        self.blink_svm = svm.SVC(kernel='rbf', C=1, gamma='scale')
-        self.blink_svm.fit(X_train, y_train)
+        self._blink_svm = svm.SVC(kernel='rbf', C=1, gamma='scale')
+        self._blink_svm.fit(X_train, y_train)
 
         # Test SVM
-        y_pred = self.blink_svm.predict(X_test)
+        y_pred = self._blink_svm.predict(X_test)
         print(confusion_matrix(y_test, y_pred))
         print(classification_report(y_test, y_pred))
 
         # Save SVM
         with open('resources/blink_model.pk1', 'wb') as f:
-            pickle.dump(self.blink_svm, f)
+            pickle.dump(self._blink_svm, f)
 
     @staticmethod
     def load_data():
@@ -147,17 +147,17 @@ class BlinkDetector(QObject):
                 ret = self.check_frame()
                 if not ret:
                     break
-                string = str(self.frame_count - 1) + ":" + str(self.ear_feature[0])
+                string = str(self._frame_count - 1) + ":" + str(self._ear_feature[0])
                 string += "\n"
                 file.write(string)
-                cv2.waitKey(5)
+                cv2.waitKey(1)
 
     def detect_blinks_threshold(self):
         """
         Detects a blink using thresholding technique
         """
-        if len(self.ear_feature) >= 2:
-            if self.ear_feature[0] > BlinkDetector.EAR_THRESHOLD > self.ear_feature[1]:
+        if len(self._ear_feature) >= 2:
+            if self._ear_feature[0] > BlinkDetector.EAR_THRESHOLD > self._ear_feature[1]:
                 print("blink")
                 self.blink_detected.emit()
 
@@ -165,44 +165,44 @@ class BlinkDetector(QObject):
         """
         Feeds a vector of eye aspect ratio values to a support vector machine to classify blinks
         """
-        if len(self.ear_feature) == BlinkDetector.EAR_FEATURE_SIZE and \
-                self.frame_count > self.last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE:
-            if self.blink_svm.predict([self.ear_feature]) == 'C':
+        if len(self._ear_feature) == BlinkDetector.EAR_FEATURE_SIZE and \
+                self._frame_count > self._last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE:
+            if self._blink_svm.predict([self._ear_feature]) == 'C':
                 print("blink")
                 self.blink_detected.emit()
-                self.last_blink_frame = self.frame_count
+                self._last_blink_frame = self._frame_count
 
     def process_frame(self, frame):
         """
         Applies face detection, landmark detection, and blink detection on a retrieved frame
         """
-        self.frame_count += 1
+        self._frame_count += 1
         # Frame preprocessing
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         gray_small = cv2.resize(gray, (0, 0), fx=1.0 / BlinkDetector.DOWNSIZE_RATIO,
                                 fy=1.0 / BlinkDetector.DOWNSIZE_RATIO)
-        if self.frame_count % BlinkDetector.SKIP_FRAMES == 0 or len(self.faces) == 0:
-            self.faces = self.face_detector(gray_small, 0)  # up-sample 0 times (less accurate, faster)
+        if self._frame_count % BlinkDetector.SKIP_FRAMES == 0 or len(self._faces) == 0:
+            self._faces = self._face_detector(gray_small, 0)  # up-sample 0 times (less accurate, faster)
         # If a face is detected
-        if len(self.faces) >= 1:
-            face = self.scale_dlib_rect(self.faces[0], BlinkDetector.DOWNSIZE_RATIO)
-            landmarks = self.landmark_detector(gray, face)
+        if len(self._faces) >= 1:
+            face = self.scale_dlib_rect(self._faces[0], BlinkDetector.DOWNSIZE_RATIO)
+            landmarks = self._landmark_detector(gray, face)
             ear_left = self.calc_ear(landmarks, BlinkDetector.LEFT_EYE_OFFSET)
             ear_right = self.calc_ear(landmarks, BlinkDetector.RIGHT_EYE_OFFSET)
-            self.ear_feature.insert(0, (ear_left + ear_right) / 2.0)
+            self._ear_feature.insert(0, (ear_left + ear_right) / 2.0)
             self.detect_blinks_svm()
-            if self.draw_mode:
+            if self._draw_mode:
                 for i in range(landmarks.num_parts):
                     cv2.circle(gray, (landmarks.part(i).x, landmarks.part(i).y), 1, (0, 255, 255), -1)
             self.face_detected.emit(True)
         else:
-            self.ear_feature.insert(0, 0.5)
+            self._ear_feature.insert(0, 0.5)
             self.face_detected.emit(False)
         # Update feature vector
-        if len(self.ear_feature) >= BlinkDetector.EAR_FEATURE_SIZE:
-            self.ear_feature.pop()
-        self.frames_per_sec = self.frame_count / (time.time() - self.start_time)
-        if self.draw_mode:
+        if len(self._ear_feature) >= BlinkDetector.EAR_FEATURE_SIZE:
+            self._ear_feature.pop()
+        self.frames_per_sec = self._frame_count / (time.time() - self._start_time)
+        if self._draw_mode:
             cv2.imshow("Output", gray)
 
 # ----------------------------------------------------------------------------------------------------------------------
