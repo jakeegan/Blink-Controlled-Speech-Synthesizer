@@ -17,11 +17,14 @@ Clone this repo:
 git clone https://github.com/jakeegan/Blink-Controlled-Speech-Synthesizer
 cd Blink-Controlled-Speech-Synthesizer
 ```
-Run the program:
-'''
+Install dependencies:
+```
 pip install -r requirements.txt
-python -m
-'''
+```
+Run the program:
+```
+python __main__.py 
+```
 
 ## Folder structure
 ```
