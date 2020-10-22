@@ -47,5 +47,3 @@ python __main__.py
 │   └───sounds
 |   |   |   ui_blink.wav ========> sound for when a blink is detected
 ```
-
-## Architecture
