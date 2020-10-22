@@ -4,8 +4,8 @@ import cv2
 import pickle
 from PySide2.QtCore import QObject, Signal, Slot
 from sklearn import svm
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
 
 
 class BlinkDetector(QObject):
