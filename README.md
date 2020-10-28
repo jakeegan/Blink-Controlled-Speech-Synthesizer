@@ -17,16 +17,15 @@ Clone this repo:
 ```
 git clone https://github.com/jakeegan/Blink-Controlled-Speech-Synthesizer
 ```
-Open PyCharm
-Start a new project
-Set project location to where you cloned the repo
-Select "New environment using" and choose "Virtualenv" from the drop down menu
-Click create
-Double click "__main__.py"
-It will say "Package requirements are not satisfied"
-Click install requirements
-Right click "__main__.py"
-Click run
+1. Open PyCharm
+2. Start a new project
+3. Set project location to where you cloned the repo
+4. Select "New environment using" and choose "Virtualenv" from the drop down menu
+5. Click create
+6. Double click "__main__.py"
+7. It will say "Package requirements are not satisfied"
+8. Click install requirements
+9. Right click "__main__.py" and click run
 
 ### Without PyCharm
 Clone this repo:
