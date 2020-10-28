@@ -12,6 +12,23 @@ An application designed to synthesize speech solely through the control of blink
 ## Installation
 Requires python 3.7 and the libraries in requirements.txt
 
+### With PyCharm and virtual environment
+Clone this repo:
+```
+git clone https://github.com/jakeegan/Blink-Controlled-Speech-Synthesizer
+```
+Open PyCharm
+Start a new project
+Set project location to where you cloned the repo
+Select "New environment using" and choose "Virtualenv" from the drop down menu
+Click create
+Double click "__main__.py"
+It will say "Package requirements are not satisfied"
+Click install requirements
+Right click "__main__.py"
+Click run
+
+### Without PyCharm
 Clone this repo:
 ```
 git clone https://github.com/jakeegan/Blink-Controlled-Speech-Synthesizer
