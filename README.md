@@ -9,6 +9,38 @@
 ## Description
 An application designed to synthesize speech solely through the control of blink gestures to enable communication for people suffering from paralysis.
 
+## Input Table
+The following table shows the possible symbols that the user can input.
+
+| FUNCTIONS | WORDS     | LETTERS | NUMBERS |
+|-----------|-----------|---------|---------|
+| ENTER     | hello     | a       | 1       |
+| ERASE     | bye       | b       | 2       |
+| SPACE     | yes       | c       | 3       |
+| TAB       | no        | d       | 4       |
+| ALT       | thank you | e       | 5       |
+| CTRL      | sorry     | f       | 6       |
+| SHIFT     | good      | g       | 7       |
+| ESC       | bad       | h       | 8       |
+| DELETE    | hungry    | i       | 9       |
+|           | thirsty   | j       |         |
+|           | happy     | k       |         |
+|           | sad       | l       |         |
+|           | help      | m       |         |
+|           |           | n       |         |
+|           |           | o       |         |
+|           |           | p       |         |
+|           |           | q       |         |
+|           |           | r       |         |
+|           |           | s       |         |
+|           |           | t       |         |
+|           |           | u       |         |
+|           |           | v       |         |
+|           |           | w       |         |
+|           |           | x       |         |
+|           |           | y       |         |
+|           |           | z       |         |
+
 ## Installation
 Requires python 3.7 and the libraries in requirements.txt
 
