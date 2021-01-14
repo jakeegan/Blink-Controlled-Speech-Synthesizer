@@ -6,10 +6,11 @@ class SymbolManager:
     """
     The SymbolManager class contains all the functions needed to handle the symbol input and output for the program.
     """
-    SYMBOLS = [["", "", "FUNCTIONS", "WORDS", "LETTERS", "NUMBERS", "", ""],
+    SYMBOLS = [["", "", "FUNCTIONS", "WORDS", "LETTERS(a-m)", "LETTERS(n-z)", "NUMBERS", "", ""],
                ["", "", "ENTER", "ERASE", "SPACE", "TAB", "ALT", "CTRL", "SHIFT", "ESC", "DELETE", "", ""],
                ["", "", "hello ", "bye ", "yes ", "no ", "thank you ", "sorry ", "good ", "bad ", "hungry ", "thirsty ", "happy ", "sad ", "help ", "", ""],
-               ["", "", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "", ""],
+               ["", "", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "", ""],
+               ["", "", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "", ""],
                ["", "", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "", ""]]
 
     def __init__(self):
@@ -67,11 +68,14 @@ class SymbolManager:
         elif symbol == "WORDS":
             self.current_set = 2
             self.current_symbol = 0
-        elif symbol == "LETTERS":
+        elif symbol == "LETTERS(a-m)":
             self.current_set = 3
             self.current_symbol = 0
-        elif symbol == "NUMBERS":
+        elif symbol == "LETTERS(n-z)":
             self.current_set = 4
+            self.current_symbol = 0
+        elif symbol == "NUMBERS":
+            self.current_set = 5
             self.current_symbol = 0
         elif symbol == "ENTER":
             self.tts.say(self.get_output_symbols())

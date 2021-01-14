@@ -78,10 +78,10 @@ class MainWindow(QWidget):
 
 
 class DialogWindow(QDialog):
-    TEXT_TIMER_DELAY = 1500     # Defines the speed of the text scrolling in miliseconds
+    TEXT_TIMER_DELAY = 1500     # Defines the speed of the text scrolling in milliseconds
     PAUSE_TIMER_DELAY = 100     # Defines the delay for the visual feedback when a blink is detected
     WINDOW_HEIGHT = 60      # Height of the dialog window
-    WINDOW_WIDTH = 640      # Width of the dialog window
+    WINDOW_WIDTH = 800      # Width of the dialog window
 
     def __init__(self, parent):
         super(DialogWindow, self).__init__(parent)
