@@ -94,6 +94,8 @@ class DialogWindow(QDialog):
 
         self.tts = QTextToSpeech()
 
+        self.setStyleSheet("border: 1px solid black")
+
         # Create labels
         self.output_label = QLabel("")
         self.output_label.setStyleSheet("background-color: white")
@@ -101,23 +103,28 @@ class DialogWindow(QDialog):
         self.output_label.setFrameStyle(QFrame.Panel | QFrame.Plain)
 
         self.suggestion_label1 = QLabel("suggestion1")
+        self.suggestion_label1.setStyleSheet("border-bottom: none; border-top: none; border-left: none")
         self.suggestion_label1.setAlignment(Qt.AlignCenter)
         self.suggestion_label1.setFont(QFont("Helvetica", 14))
 
         self.suggestion_label2 = QLabel("suggestion2")
+        self.suggestion_label2.setStyleSheet("border: none")
         self.suggestion_label2.setAlignment(Qt.AlignCenter)
         self.suggestion_label2.setFont(QFont("Helvetica", 14))
 
         self.suggestion_label3 = QLabel("suggestion3")
+        self.suggestion_label3.setStyleSheet("border-bottom: none; border-top: none; border-right: none")
         self.suggestion_label3.setAlignment(Qt.AlignCenter)
         self.suggestion_label3.setFont(QFont("Helvetica", 14))
 
         self.input_label1 = QLabel(self.symbol_manager.get_symbol_set(5)[0])
+        self.input_label1.setStyleSheet("border: none")
         self.input_label1.setAlignment(Qt.AlignCenter)
         self.input_label1.setFont(QFont("Helvetica", 16))
         self.input_label1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label2 = QLabel(self.symbol_manager.get_symbol_set(5)[1])
+        self.input_label2.setStyleSheet("border: none")
         self.input_label2.setAlignment(Qt.AlignCenter)
         self.input_label2.setFont(QFont("Helvetica", 16))
         self.input_label2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -130,11 +137,13 @@ class DialogWindow(QDialog):
         self.input_label3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label4 = QLabel(self.symbol_manager.get_symbol_set(5)[3])
+        self.input_label4.setStyleSheet("border: none")
         self.input_label4.setAlignment(Qt.AlignCenter)
         self.input_label4.setFont(QFont("Helvetica", 16))
         self.input_label4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label5 = QLabel(self.symbol_manager.get_symbol_set(5)[4])
+        self.input_label5.setStyleSheet("border: none")
         self.input_label5.setAlignment(Qt.AlignCenter)
         self.input_label5.setFont(QFont("Helvetica", 16))
         self.input_label5.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -246,11 +255,14 @@ class DialogWindow(QDialog):
         if face_detected:
             self.suggestion_label1.setText("suggestion1")
             self.suggestion_label1.setStyleSheet("background-color: #F0F0F0;")
+            self.suggestion_label1.setStyleSheet("border-bottom: none; border-top: none; border-left: none")
+            self.suggestion_label2.setStyleSheet("border: none")
+            self.suggestion_label3.setStyleSheet("border-bottom: none; border-top: none; border-right: none")
             self.suggestion_label2.show()
             self.suggestion_label3.show()
         else:
             self.suggestion_label1.setText("Face not detected. Adjust camera.")
-            self.suggestion_label1.setStyleSheet("background-color: lightcoral;")
+            self.suggestion_label1.setStyleSheet("background-color: lightcoral; border: none")
             self.suggestion_label2.hide()
             self.suggestion_label3.hide()
 
