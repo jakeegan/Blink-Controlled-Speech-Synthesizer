@@ -89,6 +89,7 @@ class DialogWindow(QDialog):
         # Window configurations
         self.setWindowFlag(Qt.FramelessWindowHint)
         self.setGeometry(0, 0, DialogWindow.WINDOW_WIDTH, DialogWindow.WINDOW_HEIGHT)
+        self.setContentsMargins(1, 1, 1, 1)
 
         self.symbol_manager = SymbolManager()
 

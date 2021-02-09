@@ -158,7 +158,6 @@ class BlinkDetector(QObject):
         """
         if len(self._ear_feature) >= 2:
             if self._ear_feature[0] > BlinkDetector.EAR_THRESHOLD > self._ear_feature[1]:
-                print("blink")
                 self.blink_detected.emit()
 
     def detect_blinks_svm(self):
@@ -168,7 +167,6 @@ class BlinkDetector(QObject):
         if len(self._ear_feature) == BlinkDetector.EAR_FEATURE_SIZE and \
                 self._frame_count > self._last_blink_frame + BlinkDetector.EAR_FEATURE_SIZE:
             if self._blink_svm.predict([self._ear_feature]) == 'C':
-                print("blink")
                 self.blink_detected.emit()
                 self._last_blink_frame = self._frame_count
 
