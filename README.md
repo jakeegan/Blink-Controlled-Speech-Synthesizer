@@ -9,6 +9,11 @@
 ## Description
 An application designed to synthesize speech solely through the control of blink gestures to enable communication for people suffering from paralysis.
 
+## State Diagram
+A state diagram depicting the behaviour of the blink controller.
+
+![State Diagram](resources/state_diagram.png)
+
 ## Input Table
 The following table shows the possible symbols that the user can input.
 
