@@ -1,6 +1,7 @@
+from PySide2 import QtGui
 from PySide2.QtWidgets import (QWidget, QDesktopWidget, QDialog, QPushButton,
-                               QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QFrame)
-from PySide2.QtCore import Slot, Qt, QTimer, QUrl, QEvent
+                               QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QFrame, QTabWidget, QScrollArea)
+from PySide2.QtCore import Slot, Qt, QTimer, QUrl
 from PySide2.QtTextToSpeech import QTextToSpeech
 from PySide2.QtGui import QFont
 from PySide2.QtMultimedia import QSoundEffect
@@ -31,6 +32,7 @@ class MainWindow(QWidget):
         self.setWindowTitle("Blink2Talk")
         self.setGeometry(0, 0, MainWindow.WINDOW_WIDTH, MainWindow.WINDOW_HEIGHT)
         self.move_center()
+        self.setWindowIcon(QtGui.QIcon('resources/icon.svg'))
 
         # Create buttons
         self.button_start = QPushButton("Start")
@@ -118,30 +120,30 @@ class OptionsWindow(QDialog):
         # Create delay options
         self.delay_display = QLabel("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
         self.delay_display.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        self.delay_display.setFont(QFont("Helvetica", TEXT_SIZE))
+        self.delay_display.setStyleSheet("font: 10pt")
         self.button_slower = QPushButton("+")
         self.button_slower.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.button_slower.setFixedSize(50, 50)
+        self.button_slower.setFixedSize(36, 36)
         self.button_slower.setFont(QFont("Helvetica", TEXT_SIZE))
         self.button_slower.clicked.connect(self.button_slower_clicked)
         self.button_faster = QPushButton("-")
         self.button_faster.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.button_faster.setFixedSize(50, 50)
+        self.button_faster.setFixedSize(36, 36)
         self.button_faster.setFont(QFont("Helvetica", TEXT_SIZE))
         self.button_faster.clicked.connect(self.button_faster_clicked)
 
         # Create text size options
-        self.text_size_display = QLabel("Blink Controller Text Size: " + str(TEXT_SIZE) + " pt font")
+        self.text_size_display = QLabel("Blink Controller Text Size: " + str(TEXT_SIZE) + " pt")
         self.text_size_display.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
-        self.text_size_display.setFont(QFont("Helvetica", TEXT_SIZE))
+        self.text_size_display.setStyleSheet("font: 10pt")
         self.button_larger = QPushButton("+")
         self.button_larger.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.button_larger.setFixedSize(50, 50)
+        self.button_larger.setFixedSize(36, 36)
         self.button_larger.setFont(QFont("Helvetica", TEXT_SIZE))
         self.button_larger.clicked.connect(self.button_larger_clicked)
         self.button_smaller = QPushButton("-")
         self.button_smaller.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        self.button_smaller.setFixedSize(50, 50)
+        self.button_smaller.setFixedSize(36, 36)
         self.button_smaller.setFont(QFont("Helvetica", TEXT_SIZE))
         self.button_smaller.clicked.connect(self.button_smaller_clicked)
 
@@ -168,27 +170,30 @@ class OptionsWindow(QDialog):
         Handler for the faster scrolling button
         """
         global TEXT_TIMER_DELAY
-        if TEXT_TIMER_DELAY < 2300:
-            TEXT_TIMER_DELAY = TEXT_TIMER_DELAY + 20
-            self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
+        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY + 20
+        if TEXT_TIMER_DELAY > 3000:
+            TEXT_TIMER_DELAY = 3000
+        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
 
     def button_faster_clicked(self):
         """
         Handler for the faster scrolling button
         """
         global TEXT_TIMER_DELAY
-        if TEXT_TIMER_DELAY > 900:
-            TEXT_TIMER_DELAY = TEXT_TIMER_DELAY - 20
-            self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
+        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY - 20
+        if TEXT_TIMER_DELAY < 500:
+            TEXT_TIMER_DELAY = 500
+        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
 
     def button_larger_clicked(self):
         """
         Handler for the larger text button
         """
         global OVERLAY_TEXT_SIZE
-        if TEXT_SIZE < 23:
-            OVERLAY_TEXT_SIZE += 1
-            self.text_size_display.setText("Blink Controller Text Size: " + str(OVERLAY_TEXT_SIZE) + " pt font")
+        OVERLAY_TEXT_SIZE += 1
+        if OVERLAY_TEXT_SIZE > 15:
+            OVERLAY_TEXT_SIZE = 15
+        self.text_size_display.setText("Blink Controller Text Size: " + str(OVERLAY_TEXT_SIZE) + " pt")
 
     def button_smaller_clicked(self):
         """
@@ -196,7 +201,9 @@ class OptionsWindow(QDialog):
         """
         global OVERLAY_TEXT_SIZE
         OVERLAY_TEXT_SIZE -= 1
-        self.text_size_display.setText("Blink Controller Text Size: " + str(OVERLAY_TEXT_SIZE) + " pt font")
+        if OVERLAY_TEXT_SIZE < 8:
+            OVERLAY_TEXT_SIZE = 8
+        self.text_size_display.setText("Blink Controller Text Size: " + str(OVERLAY_TEXT_SIZE) + " pt")
 
 
 class HelpWindow(QDialog):
@@ -211,6 +218,65 @@ class HelpWindow(QDialog):
         self.setGeometry(0, 0, HelpWindow.WINDOW_WIDTH, HelpWindow.WINDOW_HEIGHT)
         resolution = QDesktopWidget().screenGeometry()
         self.move((resolution.width() / 2) - (self.frameSize().width() / 2), (resolution.height() / 2) - (self.frameSize().height() / 2))
+
+        self.layout = QVBoxLayout(self)
+
+        self.instructionsLabel = QLabel(self)
+        self.instructionsLabel.setText("1. Adjust the camera to have a clear frontal view of your face.\n\n"
+                                       "2. Click the start button to open the blink controller window.\n\n"
+                                       "3. When a category scrolls into the selector, blink to open it.\n\n"
+                                       "4. When a symbol scrolls into the selector, blink to input it.\n\n"
+                                       "5. Continue steps 3 and 4 to form a sentence.\n\n"
+                                       "6. Input the ENTER symbol to output the sentence as speech.\n\n"
+                                       "7. When finished, click the stop button to close the blink controller.\n\n")
+        self.instructionsLabel.setStyleSheet("font: 10pt")
+        self.instructionsLabel.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+
+        self.faqLabel = QLabel(self)
+        self.faqLabel.setText("<b>Why is there a face not detected warning when I use the blink controller?</b><br>"
+                              "The blink controller is having trouble detecting your face. "
+                              "Ensure that your webcam has a clear frontal view of your face and your room"
+                              " is well lit.<br><br>"
+                              "<b>How do I input text?</b><br>"
+                              "Select a category by blinking when it scrolls into the selector. "
+                              "Next, select the word/phrase/letter/number you want to input by blinking "
+                              "when it scrolls into the selector.<br><br>"
+                              "<b>How do I output speech?</b><br>"
+                              "After entering the text you want to say, select the FUNCTIONS category and select "
+                              "the ENTER symbol. Your text will be converted to speech.")
+        self.faqLabel.setStyleSheet("font: 10pt")
+        self.faqLabel.setWordWrap(True)
+        self.faqLabel.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+
+        self.diagramPixmap = QtGui.QPixmap('resources/controller_diagram.png')
+        self.diagramLabel = QLabel(self)
+        self.diagramLabel.setPixmap(self.diagramPixmap)
+
+        self.tabs = QTabWidget()
+        self.tab1 = QWidget()
+        self.tab2 = QWidget()
+        self.tab3 = QWidget()
+        self.tabs.setStyleSheet("font: 10pt")
+
+        self.tabs.addTab(self.tab1, "Instructions For Use")
+        self.tabs.addTab(self.tab2, "Frequently Asked Questions")
+        self.tabs.addTab(self.tab3, "Diagram")
+
+        self.tab1.layout = QVBoxLayout(self)
+        self.tab1.layout.addWidget(self.instructionsLabel)
+        self.tab1.setLayout(self.tab1.layout)
+
+        self.tab2.layout = QVBoxLayout(self)
+        self.tab2.layout.addWidget(self.faqLabel)
+        self.tab2.setLayout(self.tab2.layout)
+
+        self.tab3.layout = QVBoxLayout(self)
+        self.tab3.layout.addWidget(self.diagramLabel)
+        self.tab3.setLayout(self.tab3.layout)
+
+        self.layout.addWidget(self.tabs)
+        self.setLayout(self.layout)
+
         self.show()
 
 
@@ -421,3 +487,22 @@ class DialogWindow(QDialog):
         if event.key() == Qt.Key_Space:
             self.handle_blink_start()
         event.accept()
+
+
+class ScrollLabel(QScrollArea):
+
+    def __init__(self, *args, **kwargs):
+        QScrollArea.__init__(self, *args, **kwargs)
+
+        self.setWidgetResizable(True)
+        content = QWidget(self)
+        self.setWidget(content)
+        lay = QVBoxLayout(content)
+        self.label = QLabel(content)
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.label.setWordWrap(True)
+        lay.addWidget(self.label)
+
+    def setText(self, text):
+        self.label.setText(text)
+
