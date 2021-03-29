@@ -104,7 +104,7 @@ class MainWindow(QWidget):
 
 
 class OptionsWindow(QDialog):
-    global TEXT_TIMER_DELAY, TEXT_SIZE  # Pulls the timer delay and text size as global variables
+    global TEXT_TIMER_DELAY, OVERLAY_TEXT_SIZE, TEXT_SIZE  # Pulls the timer delay and text size as global variables
     WINDOW_HEIGHT = 100      # Height of the window
     WINDOW_WIDTH = 400      # Width of the window
 
@@ -118,7 +118,7 @@ class OptionsWindow(QDialog):
         self.move((resolution.width() / 2) - (self.frameSize().width() / 2), (resolution.height() / 2) - (self.frameSize().height() / 2))
 
         # Create delay options
-        self.delay_display = QLabel("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
+        self.delay_display = QLabel("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY/1000) + " s")
         self.delay_display.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         self.delay_display.setStyleSheet("font: 10pt")
         self.button_slower = QPushButton("+")
@@ -133,7 +133,7 @@ class OptionsWindow(QDialog):
         self.button_faster.clicked.connect(self.button_faster_clicked)
 
         # Create text size options
-        self.text_size_display = QLabel("Blink Controller Text Size: " + str(TEXT_SIZE) + " pt")
+        self.text_size_display = QLabel("Blink Controller Text Size: " + str(OVERLAY_TEXT_SIZE) + " pt")
         self.text_size_display.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         self.text_size_display.setStyleSheet("font: 10pt")
         self.button_larger = QPushButton("+")
@@ -170,20 +170,20 @@ class OptionsWindow(QDialog):
         Handler for the faster scrolling button
         """
         global TEXT_TIMER_DELAY
-        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY + 20
+        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY + 100
         if TEXT_TIMER_DELAY > 3000:
             TEXT_TIMER_DELAY = 3000
-        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
+        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY/1000) + " s")
 
     def button_faster_clicked(self):
         """
         Handler for the faster scrolling button
         """
         global TEXT_TIMER_DELAY
-        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY - 20
+        TEXT_TIMER_DELAY = TEXT_TIMER_DELAY - 100
         if TEXT_TIMER_DELAY < 500:
             TEXT_TIMER_DELAY = 500
-        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY) + " ms")
+        self.delay_display.setText("Blink Controller Scroll Delay: " + str(TEXT_TIMER_DELAY/1000) + " s")
 
     def button_larger_clicked(self):
         """
@@ -243,7 +243,9 @@ class HelpWindow(QDialog):
                               "when it scrolls into the selector.<br><br>"
                               "<b>How do I output speech?</b><br>"
                               "After entering the text you want to say, select the FUNCTIONS category and select "
-                              "the ENTER symbol. Your text will be converted to speech.")
+                              "the ENTER symbol. Your text will be converted to speech.<br><br>"
+                              "<b>Why doesn't the application detect my blinks?</b><br>"
+                              "Ensure that you make full blinks lasting around 1 second.")
         self.faqLabel.setStyleSheet("font: 10pt")
         self.faqLabel.setWordWrap(True)
         self.faqLabel.setAlignment(Qt.AlignTop | Qt.AlignLeft)
@@ -281,7 +283,7 @@ class HelpWindow(QDialog):
 
 
 class DialogWindow(QDialog):
-    TEXT_TIMER_DELAY = 1500     # Defines the speed of the text scrolling in milliseconds
+    global TEXT_TIMER_DELAY, OVERLAY_TEXT_SIZE, TEXT_SIZE
     PAUSE_TIMER_DELAY = 100     # Defines the delay for the visual feedback when a blink is detected
     WINDOW_HEIGHT = 60      # Height of the dialog window
     WINDOW_WIDTH = 800      # Width of the dialog window
@@ -303,39 +305,39 @@ class DialogWindow(QDialog):
         # Create labels
         self.output_label = QLabel("")
         self.output_label.setStyleSheet("background-color: white")
-        self.output_label.setFont(QFont("Helvetica", 16))
+        self.output_label.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.output_label.setFrameStyle(QFrame.Panel | QFrame.Plain)
 
         self.suggestion_label1 = QLabel("")
         self.suggestion_label1.setStyleSheet("border-bottom: none; border-top: none; border-left: none")
         self.suggestion_label1.setAlignment(Qt.AlignCenter)
-        self.suggestion_label1.setFont(QFont("Helvetica", 14))
+        self.suggestion_label1.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE))
 
         self.suggestion_label2 = QLabel("")
         self.suggestion_label2.setStyleSheet("border: none")
         self.suggestion_label2.setAlignment(Qt.AlignCenter)
-        self.suggestion_label2.setFont(QFont("Helvetica", 14))
+        self.suggestion_label2.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE))
 
         self.suggestion_label3 = QLabel("")
         self.suggestion_label3.setStyleSheet("border-bottom: none; border-top: none; border-right: none")
         self.suggestion_label3.setAlignment(Qt.AlignCenter)
-        self.suggestion_label3.setFont(QFont("Helvetica", 14))
+        self.suggestion_label3.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE))
 
         self.input_label1 = QLabel(self.symbol_manager.get_symbol_set(5)[0])
         self.input_label1.setStyleSheet("border: none")
         self.input_label1.setAlignment(Qt.AlignCenter)
-        self.input_label1.setFont(QFont("Helvetica", 16))
+        self.input_label1.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.input_label1.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label2 = QLabel(self.symbol_manager.get_symbol_set(5)[1])
         self.input_label2.setStyleSheet("border: none")
         self.input_label2.setAlignment(Qt.AlignCenter)
-        self.input_label2.setFont(QFont("Helvetica", 16))
+        self.input_label2.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.input_label2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label3 = QLabel(self.symbol_manager.get_symbol_set(5)[2])
         self.input_label3.setAlignment(Qt.AlignCenter)
-        self.input_label3.setFont(QFont("Helvetica", 16))
+        self.input_label3.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.input_label3.setFrameStyle(QFrame.Panel | QFrame.Plain)
         self.input_label3.setStyleSheet("QLabel { background-color: white; color: black; }")
         self.input_label3.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -343,18 +345,18 @@ class DialogWindow(QDialog):
         self.input_label4 = QLabel(self.symbol_manager.get_symbol_set(5)[3])
         self.input_label4.setStyleSheet("border: none")
         self.input_label4.setAlignment(Qt.AlignCenter)
-        self.input_label4.setFont(QFont("Helvetica", 16))
+        self.input_label4.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.input_label4.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.input_label5 = QLabel(self.symbol_manager.get_symbol_set(5)[4])
         self.input_label5.setStyleSheet("border: none")
         self.input_label5.setAlignment(Qt.AlignCenter)
-        self.input_label5.setFont(QFont("Helvetica", 16))
+        self.input_label5.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE + 2))
         self.input_label5.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.detected_label = QLabel("Face not detected. Adjust camera")
         self.detected_label.setAlignment(Qt.AlignCenter)
-        self.detected_label.setFont(QFont("Helvetica", 14))
+        self.detected_label.setFont(QFont("Helvetica", OVERLAY_TEXT_SIZE))
         self.detected_label.hide()
 
         # Create layouts to hold the labels
@@ -400,7 +402,7 @@ class DialogWindow(QDialog):
         self.move_top_middle()
         self.show()
         self.blink_timer.start()
-        self.text_timer.start(DialogWindow.TEXT_TIMER_DELAY)
+        self.text_timer.start(TEXT_TIMER_DELAY)
 
     @Slot()
     def symbol_scroll(self):
