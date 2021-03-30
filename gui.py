@@ -2,12 +2,11 @@ from PySide2 import QtGui
 from PySide2.QtWidgets import (QWidget, QDesktopWidget, QDialog, QPushButton,
                                QHBoxLayout, QVBoxLayout, QSizePolicy, QLabel, QFrame, QTabWidget, QScrollArea)
 from PySide2.QtCore import Slot, Qt, QTimer, QUrl
-from PySide2.QtTextToSpeech import QTextToSpeech
 from PySide2.QtGui import QFont
 from PySide2.QtMultimedia import QSoundEffect
 from blinkdetector import BlinkDetector
 from symbolmanager import SymbolManager
-from wordpredictor import WordPredictor
+
 
 global TEXT_TIMER_DELAY, TEXT_SIZE, OVERLAY_TEXT_SIZE
 TEXT_TIMER_DELAY = 1500
@@ -236,7 +235,7 @@ class HelpWindow(QDialog):
         self.faqLabel.setText("<b>Why is there a face not detected warning when I use the blink controller?</b><br>"
                               "The blink controller is having trouble detecting your face. "
                               "Ensure that your webcam has a clear frontal view of your face and your room"
-                              " is well lit.<br><br>"
+                              " has sufficient lighting.<br><br>"
                               "<b>How do I input text?</b><br>"
                               "Select a category by blinking when it scrolls into the selector. "
                               "Next, select the word/phrase/letter/number you want to input by blinking "
@@ -262,7 +261,7 @@ class HelpWindow(QDialog):
 
         self.tabs.addTab(self.tab1, "Instructions For Use")
         self.tabs.addTab(self.tab2, "Frequently Asked Questions")
-        self.tabs.addTab(self.tab3, "Diagram")
+        self.tabs.addTab(self.tab3, "Blink Controller Diagram")
 
         self.tab1.layout = QVBoxLayout(self)
         self.tab1.layout.addWidget(self.instructionsLabel)
@@ -297,8 +296,6 @@ class DialogWindow(QDialog):
         self.setContentsMargins(1, 1, 1, 1)
 
         self.symbol_manager = SymbolManager()
-
-        self.tts = QTextToSpeech()
 
         self.setStyleSheet("border: 1px solid black")
 
@@ -387,7 +384,6 @@ class DialogWindow(QDialog):
         self.blink_detector.face_detected.connect(self.update_detected_label)
         self.blink_detector.blink_detected.connect(self.handle_blink_start)
 
-        self.word_predictor = WordPredictor()
         self.word_predictions = ["", "", ""]
 
         self.blink_timer = QTimer()
@@ -444,12 +440,12 @@ class DialogWindow(QDialog):
         self.input_label4.setText(self.symbol_manager.get_symbol_set(5)[3])
         self.input_label5.setText(self.symbol_manager.get_symbol_set(5)[4])
         self.input_label3.setStyleSheet("background-color: white; color: black;")
-        self.word_predictions = self.word_predictor.predict(self.symbol_manager.get_output_symbols())
-        self.suggestion_label2.setText(self.word_predictions[0])
-        self.suggestion_label1.setText(self.word_predictions[1])
+        self.word_predictions = self.symbol_manager.word_predictions
+        self.suggestion_label1.setText(self.word_predictions[0])
+        self.suggestion_label2.setText(self.word_predictions[1])
         self.suggestion_label3.setText(self.word_predictions[2])
         # Commence operation
-        self.text_timer.start(DialogWindow.TEXT_TIMER_DELAY)
+        self.text_timer.start(TEXT_TIMER_DELAY)
         self.blink_timer.start()
         self.pause_timer.stop()
 
@@ -466,8 +462,8 @@ class DialogWindow(QDialog):
         Updates the GUI to tell the user if a face is not detected by the blink detector
         """
         if face_detected:
-            self.suggestion_label2.setText(self.word_predictions[0])
-            self.suggestion_label1.setText(self.word_predictions[1])
+            self.suggestion_label1.setText(self.word_predictions[0])
+            self.suggestion_label2.setText(self.word_predictions[1])
             self.suggestion_label3.setText(self.word_predictions[2])
 
             self.suggestion_label1.setStyleSheet("background-color: #F0F0F0;")

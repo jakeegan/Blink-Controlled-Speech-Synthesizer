@@ -1,4 +1,6 @@
-from PySide2.QtTextToSpeech import QTextToSpeech
+import pyttsx3
+from pyttsx3.drivers import sapi5
+from wordpredictor import WordPredictor
 
 
 class SymbolManager:
@@ -6,7 +8,7 @@ class SymbolManager:
     The SymbolManager class contains all the functions needed to handle the symbol input and output for the program.
     """
     SYMBOLS = [["", "", "FUNCTIONS", "WORDS", "LETTERS(a-m)", "LETTERS(n-z)", "NUMBERS", "", ""],
-               ["", "", "ENTER", "ERASE", "SPACE", "", ""],
+               ["", "", "ENTER", "ERASE", "SPACE", "ACCEPT1", "ACCEPT2", "ACCEPT3", "", ""],
                ["", "", "hello ", "bye ", "yes ", "no ", "thank you ", "sorry ", "good ", "bad ", "hungry ", "thirsty ", "happy ", "sad ", "help ", "", ""],
                ["", "", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "", ""],
                ["", "", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "", ""],
@@ -16,8 +18,9 @@ class SymbolManager:
         self.current_set = 0     # The index for a set in the SYMBOLS array
         self.current_symbol = 0     # The index for the current symbol in SYMBOLS array
         self.symbol_output = []     # Contains a list of symbols for output
-        self.tts = QTextToSpeech()      # Text to speech object
-        self.mode = "talk"  # Two modes: talk or keyboard
+        self.tts = pyttsx3.init()       # Text to speech object
+        self.word_predictor = WordPredictor()    # Word prediction object
+        self.word_predictions = ["", "", ""]    # Holds three word predictions
 
     def scroll_symbols(self):
         """
@@ -77,21 +80,47 @@ class SymbolManager:
             self.current_symbol = 0
         elif symbol == "ENTER":
             self.tts.say(self.get_output_symbols())
+            self.tts.runAndWait()
             self.symbol_output = []
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "ERASE":
             if len(self.symbol_output) > 0:
                 self.symbol_output.pop()
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "SPACE":
             self.symbol_output.append(" ")
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT1":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[0] + " ")
+            self.current_set = 0
+            self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT2":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[1] + " ")
+            self.current_set = 0
+            self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT3":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[2] + " ")
+            self.current_set = 0
+            self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "":
             pass
         else:
             self.symbol_output.append(symbol)
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())

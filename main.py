@@ -1,6 +1,7 @@
 # ----------------------------------------------------------------------------------------------------------------------
 # Contains the main function which creates a QApplication.
 # ----------------------------------------------------------------------------------------------------------------------
+# pyinstaller main.py -F -w -i resources/icon.ico
 import sys
 from PySide2.QtWidgets import (QApplication)
 from gui import MainWindow
