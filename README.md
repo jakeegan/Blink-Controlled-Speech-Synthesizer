@@ -1,4 +1,5 @@
-<h1 align="center"> Blink Controlled Speech Synthesizer </h1>
+<p align="center"><img src="/resources/icon.png"></p>
+<h1 align="center"> Blink2Talk </h1>
 
 <p align="center">
 <img alt="GitHub top language" src="https://img.shields.io/github/languages/top/jakeegan/blink-controlled-speech-synthesizer">
