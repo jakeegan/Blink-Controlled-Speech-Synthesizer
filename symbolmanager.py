@@ -1,5 +1,6 @@
-from PySide2.QtTextToSpeech import QTextToSpeech
-from pynput.keyboard import Key, Controller
+import pyttsx3
+from pyttsx3.drivers import sapi5
+from wordpredictor import WordPredictor
 
 
 class SymbolManager:
@@ -7,7 +8,7 @@ class SymbolManager:
     The SymbolManager class contains all the functions needed to handle the symbol input and output for the program.
     """
     SYMBOLS = [["", "", "FUNCTIONS", "WORDS", "LETTERS(a-m)", "LETTERS(n-z)", "NUMBERS", "", ""],
-               ["", "", "ENTER", "ERASE", "SPACE", "TAB", "ALT", "CTRL", "SHIFT", "ESC", "DELETE", "", ""],
+               ["", "", "ENTER", "ERASE", "SPACE", "ACCEPT1", "ACCEPT2", "ACCEPT3", "", ""],
                ["", "", "hello ", "bye ", "yes ", "no ", "thank you ", "sorry ", "good ", "bad ", "hungry ", "thirsty ", "happy ", "sad ", "help ", "", ""],
                ["", "", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "", ""],
                ["", "", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "", ""],
@@ -17,9 +18,9 @@ class SymbolManager:
         self.current_set = 0     # The index for a set in the SYMBOLS array
         self.current_symbol = 0     # The index for the current symbol in SYMBOLS array
         self.symbol_output = []     # Contains a list of symbols for output
-        self.tts = QTextToSpeech()      # Text to speech object
-        self.key_controller = Controller()      # Keyboard output object
-        self.mode = "talk"  # Two modes: talk or keyboard
+        self.tts = pyttsx3.init()       # Text to speech object
+        self.word_predictor = WordPredictor()    # Word prediction object
+        self.word_predictions = ["", "", ""]    # Holds three word predictions
 
     def scroll_symbols(self):
         """
@@ -79,51 +80,47 @@ class SymbolManager:
             self.current_symbol = 0
         elif symbol == "ENTER":
             self.tts.say(self.get_output_symbols())
+            self.tts.runAndWait()
             self.symbol_output = []
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "ERASE":
             if len(self.symbol_output) > 0:
                 self.symbol_output.pop()
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "SPACE":
             self.symbol_output.append(" ")
             self.current_set = 0
             self.current_symbol = 0
-        elif symbol == "TAB":
-            self.key_controller.press(Key.tab)
-            self.key_controller.release(Key.tab)
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT1":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[0] + " ")
             self.current_set = 0
             self.current_symbol = 0
-        elif symbol == "ALT":
-            self.key_controller.press(Key.alt)
-            self.key_controller.release(Key.alt)
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT2":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[1] + " ")
             self.current_set = 0
             self.current_symbol = 0
-        elif symbol == "CTRL":
-            self.key_controller.press(Key.ctrl)
-            self.key_controller.release(Key.ctrl)
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
+        elif symbol == "ACCEPT3":
+            while len(self.symbol_output) > 0 and len(self.symbol_output[len(self.symbol_output)-1]) == 1:
+                self.symbol_output.pop()
+            self.symbol_output.append(self.word_predictions[2] + " ")
             self.current_set = 0
             self.current_symbol = 0
-        elif symbol == "SHIFT":
-            self.key_controller.press(Key.shift)
-            self.key_controller.release(Key.shift)
-            self.current_set = 0
-            self.current_symbol = 0
-        elif symbol == "ESC":
-            self.key_controller.press(Key.esc)
-            self.key_controller.release(Key.esc)
-            self.current_set = 0
-            self.current_symbol = 0
-        elif symbol == "DELETE":
-            self.key_controller.press(Key.delete)
-            self.key_controller.release(Key.delete)
-            self.current_set = 0
-            self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
         elif symbol == "":
             pass
         else:
             self.symbol_output.append(symbol)
             self.current_set = 0
             self.current_symbol = 0
+            self.word_predictions = self.word_predictor.predict(self.get_output_symbols())
