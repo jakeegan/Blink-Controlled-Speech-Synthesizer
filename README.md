@@ -1,12 +1,6 @@
 <p align="center"><img src="/resources/icon.png"></p>
 <h1 align="center"> Blink2Talk </h1>
 
-<p align="center">
-<img alt="GitHub top language" src="https://img.shields.io/github/languages/top/jakeegan/blink-controlled-speech-synthesizer">
-<img alt="GitHub issues" src="https://img.shields.io/github/issues/jakeegan/blink-controlled-speech-synthesizer">
-<img alt="GitHub" src="https://img.shields.io/github/license/jakeegan/Blink-Controlled-Speech-Synthesizer">
-</p>
-
 ## Description
 An application designed to synthesize speech solely through the control of blink gestures to enable communication for people suffering from paralysis.
 
